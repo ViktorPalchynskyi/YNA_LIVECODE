@@ -23,10 +23,10 @@ A modern HTTP Node.js server with timezone API endpoints, built with TypeScript,
 ### Examples
 
 ```bash
-curl http://localhost:3000/time/Etc/UTC
-curl http://localhost:3000/time/America/New_York
-curl http://localhost:3000/time/Europe/London
-curl http://localhost:3000/healthcheck
+curl http://localhost:3001/time/Etc/UTC
+curl http://localhost:3001/time/America/New_York
+curl http://localhost:3001/time/Europe/London
+curl http://localhost:3001/healthcheck
 ```
 
 ## 🛠️ Quick Start
@@ -104,7 +104,7 @@ npm run dev
 - **Hot reload** enabled with volume mounting
 - **Full development dependencies** installed
 - **Source code mounting** for instant changes
-- **Port 3000** exposed
+- **Port 3001** exposed (mapped from container port 3000)
 
 ### Production
 - **Multi-stage build** for optimized image size
