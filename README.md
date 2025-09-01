@@ -1,76 +1,181 @@
-# Timezone Server
+# Timezone Service
 
-An HTTP Node.js server written in TypeScript that provides current time information for any valid timezone identifier.
+A modern HTTP Node.js server with timezone API endpoints, built with TypeScript, Docker, and clean architecture principles.
 
-## Features
+## 🚀 Features
 
-- Single API endpoint: `/time/{timezone}`
-- Returns current time as ISO string in the requested timezone
-- Validates timezone identifiers using `Intl.DateTimeFormat`
-- Proper error handling for invalid timezones
-- CORS enabled for cross-origin requests
+- **TypeScript** with strict typing and no `any` types
+- **Decorator-based routing** (`@GET`, `@PARAM`)
+- **Dependency injection** system with service registry
+- **Docker** containerization for development and production
+- **Clean architecture** with modular service structure
+- **Code quality** tools (ESLint, Prettier)
+- **Comprehensive error handling** and validation
+- **20+ timezone identifiers** support
+- **date-fns-tz** integration for reliable timezone handling
 
-## Quick Start
+## 📡 API Endpoints
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+- `GET /` - API information
+- `GET /healthcheck` - Health check endpoint
+- `GET /time/:timezone` - Get current time in specified timezone
 
-2. Start the server (production mode):
-   ```bash
-   npm start
-   ```
+### Examples
 
-3. Or run in development mode with TypeScript:
-   ```bash
-   npm run dev
-   ```
-
-4. Test the endpoint:
-   ```bash
-   curl http://localhost:3000/time/Etc/UTC
-   curl http://localhost:3000/time/America/New_York
-   ```
-
-5. Run the comprehensive demo:
-   ```bash
-   npm run demo
-   # Or in development mode:
-   npm run demo:dev
-   ```
-
-## Development Commands
-
-- `npm run build` - Compile TypeScript to JavaScript
-- `npm run dev` - Run server in development mode with ts-node
-- `npm run demo:dev` - Run demo in development mode
-- `npm run clean` - Remove compiled files
-
-## API Endpoint
-
-### GET `/time/{timezone}`
-
-Returns the current time in the specified timezone.
-
-**Parameters:**
-- `timezone` (path parameter): A valid IANA timezone identifier
-
-**Response (Success - 200):**
-```json
-"2024-01-01T12:00:00+00:00"
+```bash
+curl http://localhost:3000/time/Etc/UTC
+curl http://localhost:3000/time/America/New_York
+curl http://localhost:3000/time/Europe/London
+curl http://localhost:3000/healthcheck
 ```
 
-**Response (Error - 400):**
-```json
-{
-  "error": "Invalid timezone",
-  "message": "The timezone identifier 'Invalid/Timezone' is not valid",
-  "requested_timezone": "Invalid/Timezone"
+## 🛠️ Quick Start
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Make (optional, for convenience commands)
+- Node.js 18+ (for local development)
+
+### Using Make (Recommended)
+
+```bash
+# Show all available commands
+make help
+
+# Start development environment
+make dev
+
+# Start production environment
+make prod
+
+# Run linting and formatting
+make lint-fix
+
+# Install dependencies locally
+make install
+
+# Build the application
+make build
+```
+
+### Using Docker Compose Directly
+
+```bash
+# Development
+docker-compose -f docker-compose.dev.yml up --build
+
+# Production
+docker-compose up --build
+```
+
+### Local Development (without Docker)
+
+```bash
+cd timezone-service
+npm install
+npm run dev
+```
+
+## 📁 Project Structure
+
+```
+.
+├── timezone-service/           # Main service code
+│   ├── src/                   # Source code
+│   │   ├── controllers/       # Route controllers
+│   │   ├── services/          # Business logic services
+│   │   │   └── timezone/      # Timezone module
+│   │   ├── routing/           # Routing system
+│   │   └── shared/            # Shared utilities
+│   ├── Dockerfile             # Production Docker image
+│   ├── Dockerfile.dev         # Development Docker image
+│   ├── package.json           # Dependencies and scripts
+│   └── tsconfig.json          # TypeScript configuration
+├── docker-compose.yml         # Production compose
+├── docker-compose.dev.yml     # Development compose
+├── Makefile                   # Convenience commands
+└── README.md                  # This file
+```
+
+## 🐳 Docker Configuration
+
+### Development
+- **Hot reload** enabled with volume mounting
+- **Full development dependencies** installed
+- **Source code mounting** for instant changes
+- **Port 3000** exposed
+
+### Production
+- **Multi-stage build** for optimized image size
+- **Non-root user** for security
+- **Health checks** configured
+- **Resource limits** applied
+- **Logging** configured
+
+## 🔧 Available Make Commands
+
+| Command | Description |
+|---------|-------------|
+| `make help` | Show all available commands |
+| `make install` | Install dependencies |
+| `make build` | Build the application |
+| `make clean` | Clean build artifacts |
+| `make lint` | Run ESLint |
+| `make format` | Format code with Prettier |
+| `make lint-fix` | Auto-fix linting and format |
+| `make dev` | Start development environment |
+| `make prod` | Start production environment |
+| `make up` | Start development services |
+| `make down` | Stop all services |
+| `make logs` | Show container logs |
+| `make demo` | Run demo script |
+| `make health` | Check service health |
+
+## 🧪 Testing
+
+```bash
+# Run demo script
+make demo
+
+# Check service health
+make health
+
+# View logs
+make logs
+```
+
+## 🏗️ Architecture
+
+### Decorator-Based Routing
+```typescript
+@GET('/time/:timezone')
+getTimeByTimezone(
+  @PARAM('timezone') timezone: string,
+  timezoneService: TimezoneService
+): TimezoneResponse
+```
+
+### Dependency Injection
+```typescript
+// Automatic service injection
+class TimezoneController {
+  constructor() {
+    // Services are automatically injected
+  }
 }
 ```
 
-## Valid Timezone Examples
+### Type Safety
+```typescript
+interface TimezoneResponse {
+  timezone: string;
+  current_time: string;
+  timestamp: string;
+}
+```
+
+## 🌍 Supported Timezones
 
 - `Etc/UTC`
 - `America/New_York`
@@ -82,38 +187,69 @@ Returns the current time in the specified timezone.
 - `Asia/Kolkata`
 - `Pacific/Honolulu`
 - `Africa/Cairo`
+- And many more...
 
-## Project Structure
+## 📊 Code Quality
 
+- **ESLint** with TypeScript rules
+- **Prettier** for consistent formatting
+- **Strict TypeScript** configuration
+- **No `any` types** policy
+- **Import organization** with custom rules
+
+## 🚀 Deployment
+
+### Production with Docker
+
+```bash
+# Build and start production environment
+make prod
+
+# Or manually
+docker-compose up --build -d
 ```
-├── src/
-│   ├── server.ts      # Main TypeScript server file
-│   └── demo.ts        # TypeScript demo script
-├── dist/              # Compiled JavaScript files (generated)
-├── tsconfig.json      # TypeScript configuration
-├── package.json       # Project dependencies and scripts
-└── README.md          # Project documentation
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NODE_ENV` | `development` | Environment mode |
+| `PORT` | `3000` | Server port |
+
+## 📝 Development
+
+### Adding New Endpoints
+
+1. Create a controller in `src/controllers/`
+2. Use `@GET` and `@PARAM` decorators
+3. Register the controller in `src/server.ts`
+4. Add types in appropriate service modules
+
+### Code Style
+
+```bash
+# Check code style
+make check
+
+# Auto-fix issues
+make lint-fix
 ```
 
-## Server Configuration
+## 🤝 Contributing
 
-- **Port:** 3000 (default)
-- **Host:** localhost
-- **Method:** GET only
-- **Content-Type:** application/json
-- **TypeScript:** Compiled to ES2020 JavaScript
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `make lint-fix` to ensure code quality
+5. Test with `make demo`
+6. Submit a pull request
 
-## Error Handling
+## 📄 License
 
-The server handles several error cases:
-- Invalid timezone identifiers (400 Bad Request)
-- Non-existent endpoints (404 Not Found)
-- Server errors (500 Internal Server Error)
+This project is licensed under the MIT License.
 
-## TypeScript Features
+## 🔗 Links
 
-- **Strict type checking** with comprehensive type annotations
-- **Interface definitions** for request/response objects
-- **Proper error handling** with typed error objects
-- **Development mode** with ts-node for rapid iteration
-- **Source maps** for debugging compiled code
+- [Docker Documentation](https://docs.docker.com/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [date-fns-tz Documentation](https://date-fns.org/docs/Time-Zones)

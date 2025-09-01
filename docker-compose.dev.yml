@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  timezone-service-dev:
+    build:
+      context: ./timezone-service
+      dockerfile: Dockerfile.dev
+    container_name: timezone-service-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reload
+      - ./timezone-service/src:/app/src:ro
+      - ./timezone-service/package.json:/app/package.json:ro
+      - ./timezone-service/tsconfig.json:/app/tsconfig.json:ro
+      # Exclude node_modules to avoid conflicts
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    networks:
+      - timezone-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  timezone-network:
+    driver: bridge
+
+volumes:
+  timezone-node-modules:
