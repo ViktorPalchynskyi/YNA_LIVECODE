@@ -19,6 +19,13 @@ export interface RouteMetadata {
   parameters: ParameterMetadata[]; // for dependency injection
 }
 
+// WebSocket metadata interface
+export interface WebSocketMetadata {
+  path: string;
+  controllerClass: Function;
+  parameters: ParameterMetadata[]; // for dependency injection
+}
+
 // Controller metadata interface
 export interface ControllerMetadata {
   routes: RouteMetadata[];
@@ -39,6 +46,7 @@ export interface ControllerInstance {
 export class RoutingRegistry {
   private static instance: RoutingRegistry;
   private controllers: Map<Function, ControllerMetadata> = new Map();
+  private webSockets: Map<Function, WebSocketMetadata> = new Map();
 
   static getInstance(): RoutingRegistry {
     if (!RoutingRegistry.instance) {
@@ -149,6 +157,27 @@ export class RoutingRegistry {
     return this.controllers;
   }
 
+  registerWebSocketRoute(target: Function, path: string): void {
+    const webSocketMetadata: WebSocketMetadata = {
+      path,
+      controllerClass: target,
+      parameters: []
+    };
+    
+    // Auto-detect constructor parameters for dependency injection
+    this.autoDetectWebSocketParameters(target, webSocketMetadata);
+    
+    this.webSockets.set(target, webSocketMetadata);
+  }
+
+  getWebSocketMetadata(target: Function): WebSocketMetadata | undefined {
+    return this.webSockets.get(target);
+  }
+
+  getAllWebSockets(): Map<Function, WebSocketMetadata> {
+    return this.webSockets;
+  }
+
   /**
    * Auto-detect service parameters using reflection metadata
    * This identifies parameters that should be dependency injected
@@ -175,6 +204,56 @@ export class RoutingRegistry {
     } catch (error) {
       // Reflection metadata might not be available, that's okay
       console.warn(`Could not auto-detect service parameters for ${target.name}.${handler}:`, error);
+    }
+  }
+
+  /**
+   * Auto-detect WebSocket constructor parameters using reflection metadata
+   */
+  private autoDetectWebSocketParameters(target: Function, metadata: WebSocketMetadata): void {
+    try {
+      // Get constructor parameter types from reflection metadata
+      const paramTypes = Reflect.getMetadata('design:paramtypes', target) || [];
+      
+      // Register service parameters for non-primitive types
+      paramTypes.forEach((paramType: any, index: number) => {
+        if (paramType && this.isServiceType(paramType)) {
+          metadata.parameters.push({
+            index,
+            type: 'service',
+            serviceType: paramType
+          });
+        } else if (paramType === String) {
+          // String parameters might be @Param decorated
+          metadata.parameters.push({
+            index,
+            type: 'param'
+          });
+        }
+      });
+    } catch (error) {
+      // Reflection metadata might not be available, that's okay
+      console.warn(`Could not auto-detect WebSocket parameters for ${target.name}:`, error);
+    }
+  }
+
+  /**
+   * Register a WebSocket parameter (for @Param decorators in constructor)
+   */
+  registerWebSocketParam(target: Function, paramName: string, paramIndex: number): void {
+    const metadata = this.webSockets.get(target);
+    if (metadata) {
+      const existingParam = metadata.parameters.find(p => p.index === paramIndex);
+      if (existingParam) {
+        existingParam.type = 'param';
+        existingParam.name = paramName;
+      } else {
+        metadata.parameters.push({
+          index: paramIndex,
+          type: 'param',
+          name: paramName
+        });
+      }
     }
   }
 

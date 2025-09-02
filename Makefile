@@ -114,9 +114,25 @@ type-check: ## Check TypeScript types
 	@echo "🔍 Checking TypeScript types..."
 	cd timezone-service && npm run type-check
 
-demo: ## Run demo script
-	@echo "🎬 Running demo..."
+demo: ## Run HTTP API demo script
+	@echo "🎬 Running HTTP API demo..."
 	cd timezone-service && npm run demo
+
+socketio-demo: ## Run Socket.io demo (single timezone)
+	@echo "🔌 Running Socket.io demo..."
+	cd timezone-service && npm run socketio-demo
+
+socketio-demo-multi: ## Run Socket.io demo (multiple timezones)
+	@echo "🌍 Running multi-timezone Socket.io demo..."
+	cd timezone-service && npm run socketio-demo multi
+
+socketio-demo-interactive: ## Run Socket.io demo (interactive timezone switching)
+	@echo "🎮 Running interactive Socket.io demo..."
+	cd timezone-service && npm run socketio-demo interactive
+
+socketio-demo-invalid: ## Run Socket.io demo (invalid timezone)
+	@echo "❌ Running invalid timezone Socket.io demo..."
+	cd timezone-service && npm run socketio-demo invalid
 
 # Health check
 health: ## Check service health

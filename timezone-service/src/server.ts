@@ -1,8 +1,8 @@
 import 'module-alias/register'; // Added for runtime alias support
 import 'reflect-metadata'; // Added for dependency injection
 import * as http from 'http';
-import { Router } from '@routing';
-import { TimezoneController, HealthcheckController } from '@controllers';
+import { Router, SocketServer } from '@routing';
+import { TimezoneController, HealthcheckController, TimezoneWebSocket } from '@controllers';
 import { sendErrorResponse } from '@shared';
 
 // TODO: Get from environment variables
@@ -17,6 +17,10 @@ const healthcheckController = new HealthcheckController();
 
 router.registerController(timezoneController);
 router.registerController(healthcheckController);
+
+// Register WebSocket controllers (they are registered via decorators)
+// Just importing TimezoneWebSocket is enough to trigger the decorator registration
+TimezoneWebSocket;
 
 // Create HTTP server with decorator-based routing
 const server: http.Server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
@@ -46,19 +50,30 @@ const server: http.Server = http.createServer(async (req: http.IncomingMessage, 
   }
 });
 
+// Initialize Socket.io server
+const socketServer = new SocketServer(server);
+
 // Start server
 server.listen(PORT, (): void => {
   console.log(`🕒 Timezone server running on http://localhost:${PORT}`);
-  console.log(`📍 Endpoints available:`);
+  console.log(`📍 HTTP Endpoints available:`);
   console.log(`   GET / - API information`);
   console.log(`   GET /time/{timezone} - Get time in timezone`);
   console.log(`   GET /healthcheck - Health check`);
-  console.log(`📝 Example: http://localhost:${PORT}/time/Etc/UTC`);
+  console.log(`🔌 Socket.io Endpoints available:`);
+  console.log(`   Connect and emit 'subscribe-timezone' with {timezone: 'UTC'}`);
+  console.log(`📝 Examples:`);
+  console.log(`   HTTP: http://localhost:${PORT}/time/Etc/UTC`);
+  console.log(`   Socket.io: Connect to http://localhost:${PORT} and emit 'subscribe-timezone'`);
 });
 
 // Handle graceful shutdown
 process.on('SIGINT', (): void => {
   console.log('\n🛑 Shutting down server...');
+  
+  // Cleanup Socket.io server first
+  socketServer.cleanup();
+  
   server.close((): void => {
     console.log('✅ Server closed');
     process.exit(0);

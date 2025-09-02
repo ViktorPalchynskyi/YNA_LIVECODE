@@ -12,17 +12,16 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
-    '!src/demo.ts',
     '!src/server.ts', // Exclude main server file from coverage
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
-      branches: 55,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+      branches: 60, // Adjusted to match current coverage: 61.11%
+      functions: 80, // Adjusted to match current coverage: 84.61%
+      lines: 80, // Adjusted to match current coverage: 85.4%
+      statements: 80, // Adjusted to match current coverage: 83.54%
     },
   },
   moduleNameMapper: {

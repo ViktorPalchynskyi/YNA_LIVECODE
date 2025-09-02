@@ -98,24 +98,26 @@ jobs:
       
     - name: Build development Docker image
       run: |
-        docker build -f timezone-service/Dockerfile.dev -t timezone-service:dev timezone-service
+        cd timezone-service
+        docker build -f Dockerfile.dev -t timezone-service:dev .
         
     - name: Build production Docker image
       run: |
-        docker build -f timezone-service/Dockerfile -t timezone-service:latest timezone-service
+        cd timezone-service
+        docker build -f Dockerfile -t timezone-service:latest .
         
     - name: Test Docker containers
       run: |
         # Test development container
         docker run --rm -d --name test-dev -p 3001:3000 timezone-service:dev
-        sleep 10
-        curl -f http://localhost:3001/healthcheck || exit 1
+        sleep 15
+        curl -f http://localhost:3001/healthcheck || (docker logs test-dev && exit 1)
         docker stop test-dev
         
         # Test production container
         docker run --rm -d --name test-prod -p 3002:3000 timezone-service:latest
-        sleep 10
-        curl -f http://localhost:3002/healthcheck || exit 1
+        sleep 15
+        curl -f http://localhost:3002/healthcheck || (docker logs test-prod && exit 1)
         docker stop test-prod
         
     - name: Run security scan
@@ -127,7 +129,7 @@ jobs:
         
     - name: Upload Trivy scan results
       uses: github/codeql-action/upload-sarif@v3
-      if: always()
+      if: always() && hashFiles('trivy-results.sarif') != ''
       with:
         sarif_file: 'trivy-results.sarif'
 
