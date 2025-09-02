@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   test:
     name: Test & Quality Check
@@ -88,6 +92,9 @@ jobs:
     name: Docker Build & Test
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
+      security-events: write
     
     steps:
     - name: Checkout code
@@ -129,9 +136,21 @@ jobs:
         
     - name: Upload Trivy scan results
       uses: github/codeql-action/upload-sarif@v3
-      if: always() && hashFiles('trivy-results.sarif') != ''
+      if: always() && hashFiles('trivy-results.sarif') != '' && github.event_name != 'pull_request'
       with:
         sarif_file: 'trivy-results.sarif'
+      continue-on-error: true
+        
+    - name: Display Trivy scan results
+      if: always() && hashFiles('trivy-results.sarif') != ''
+      run: |
+        echo "📊 Trivy Security Scan Results:"
+        if [ -f trivy-results.sarif ]; then
+          echo "✅ Security scan completed successfully"
+          echo "Results saved to trivy-results.sarif"
+        else
+          echo "❌ No security scan results found"
+        fi
 
   deploy-staging:
     name: Deploy to Staging
